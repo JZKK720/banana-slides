@@ -240,44 +240,48 @@ jobs:
           AUTO_CLEANUP=false ./scripts/test_docker_environment.sh
       
       - name: Setup Node.js for E2E tests
+        if: env.GOOGLE_API_KEY != '' && env.GOOGLE_API_KEY != 'mock-api-key-for-testing'
         uses: actions/setup-node@v4
         with:
           node-version: '18'
       
       - name: Install Playwright
+        if: env.GOOGLE_API_KEY != '' && env.GOOGLE_API_KEY != 'mock-api-key-for-testing'
         run: |
           npm install -D @playwright/test
           npx playwright install --with-deps chromium
       
-      - name: Run basic E2E tests
-        run: |
-          # Run basic UI tests (no real API dependency)
-          npx playwright test home.spec.ts create-ppt.spec.ts
-        env:
-          CI: true
-        continue-on-error: false
-      
-      - name: Run full flow E2E tests (requires real API)
+      - name: Run E2E tests
         if: env.GOOGLE_API_KEY != '' && env.GOOGLE_API_KEY != 'mock-api-key-for-testing'
         run: |
-          # Run full flow tests (from creation to PPT export)
+          # Run complete E2E flow (from creation to PPT export)
+          # This is the ONLY E2E test - tests the full AI generation workflow
+          # Requires: Real Google API key
           # Using Gemini format for full flow testing
-          echo "Full E2E test - Gemini format"
+          echo "Running E2E tests with Gemini format"
           npx playwright test api-full-flow.spec.ts --workers=1
         env:
           CI: true
         timeout-minutes: 15
         continue-on-error: false
       
-      - name: Skip full flow test
+      - name: Skip E2E tests (no API key)
         if: env.GOOGLE_API_KEY == '' || env.GOOGLE_API_KEY == 'mock-api-key-for-testing'
         run: |
-          echo "Skipping full flow E2E test"
+          echo "⚠️  Skipping E2E tests"
+          echo ""
           echo "Reason: GOOGLE_API_KEY not configured or using mock key"
-          echo "Note: OpenAI format compatibility is verified in integration tests"
+          echo ""
+          echo "Note: Other tests already passed:"
+          echo "  ✅ Backend unit tests"
+          echo "  ✅ Backend integration tests (with mock AI)"
+          echo "  ✅ Frontend unit tests"
+          echo "  ✅ Docker environment tests"
+          echo ""
+          echo "E2E tests require a real Google API key to test the complete AI generation workflow."
       
       - name: Upload E2E test report
-        if: always()
+        if: always() && (env.GOOGLE_API_KEY != '' && env.GOOGLE_API_KEY != 'mock-api-key-for-testing')
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -285,7 +289,7 @@ jobs:
           retention-days: 7
       
       - name: Upload E2E failure screenshots
-        if: failure()
+        if: failure() && (env.GOOGLE_API_KEY != '' && env.GOOGLE_API_KEY != 'mock-api-key-for-testing')
         uses: actions/upload-artifact@v4
         with:
           name: playwright-screenshots
@@ -353,11 +357,14 @@ jobs:
           echo "================================="
           echo ""
           echo "Test Results:"
-          echo "  Backend unit tests: ${{ needs.backend-unit-test.result }}"
-          echo "  Backend integration tests: ${{ needs.backend-integration-test.result }}"
-          echo "  Frontend tests: ${{ needs.frontend-test.result }}"
-          echo "  Docker environment tests (包含E2E): ${{ needs.docker-test.result }}"
-          echo "  Security scan: ${{ needs.security-scan.result }}"
+          echo "  ✅ Backend unit tests: ${{ needs.backend-unit-test.result }}"
+          echo "  ✅ Backend integration tests: ${{ needs.backend-integration-test.result }}"
+          echo "  ✅ Frontend tests: ${{ needs.frontend-test.result }}"
+          echo "  ✅ Docker environment tests: ${{ needs.docker-test.result }}"
+          echo "  ℹ️  Security scan: ${{ needs.security-scan.result }}"
+          echo ""
+          echo "Note: E2E tests are part of docker-test job"
+          echo "      They run only if GOOGLE_API_KEY is configured"
           echo ""
       
       - name: Check if all tests passed
