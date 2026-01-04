@@ -1115,15 +1115,19 @@ class ExportService:
                     logger.error(f"Failed to add background: {e}")
             
             # 添加所有元素（递归地）
-            # scale_x = scale_y = 1.0 因为我们已经用正确的尺寸分析了
-            logger.info(f"    元素数量: {len(editable_img.elements)}")
+            # 计算缩放比例：将原始图片坐标映射到统一的幻灯片坐标
+            # 背景图已经缩放到幻灯片尺寸，所以元素坐标也需要相应缩放
+            scale_x = slide_width_pixels / editable_img.width
+            scale_y = slide_height_pixels / editable_img.height
+            logger.info(f"    元素数量: {len(editable_img.elements)}, 图片尺寸: {editable_img.width}x{editable_img.height}, "
+                       f"幻灯片尺寸: {slide_width_pixels}x{slide_height_pixels}, 缩放比例: {scale_x:.3f}x{scale_y:.3f}")
             
             ExportService._add_editable_elements_to_slide(
                 builder=builder,
                 slide=slide,
                 elements=editable_img.elements,
-                scale_x=1.0,
-                scale_y=1.0,
+                scale_x=scale_x,
+                scale_y=scale_y,
                 depth=0,
                 text_styles_cache=text_styles_cache,  # 使用预提取的样式缓存
                 warnings=warnings  # 收集警告

@@ -225,11 +225,48 @@ def export_editable_pptx(
         output_file = output_file.rsplit('.', 1)[0] + '_1.pptx'
         logger.warning(f"输出文件已存在，给一个后缀防止冲突: {output_file}")
     
+    # 根据实际图片尺寸动态设置幻灯片尺寸
+    # 统一到最小尺寸，并检查所有图片是否为16:9比例
+    if editable_images:
+        # 16:9 比例的标准值
+        ASPECT_RATIO_16_9 = 16 / 9  # ≈ 1.7778
+        ASPECT_RATIO_TOLERANCE = 0.01  # 允许1%的误差
+        
+        # 检查所有图片是否为16:9比例，并找到最小尺寸
+        min_width = float('inf')
+        min_height = float('inf')
+        
+        for idx, img in enumerate(editable_images):
+            aspect_ratio = img.width / img.height
+            ratio_diff = abs(aspect_ratio - ASPECT_RATIO_16_9) / ASPECT_RATIO_16_9
+            
+            if ratio_diff > ASPECT_RATIO_TOLERANCE:
+                logger.error(f"图片 {idx + 1} ({image_paths[idx]}) 不是16:9比例: "
+                           f"{img.width}x{img.height} (比例 {aspect_ratio:.4f}, 期望 {ASPECT_RATIO_16_9:.4f})")
+                raise ValueError(f"所有图片必须是16:9比例，但第 {idx + 1} 张图片 ({img.width}x{img.height}) 不符合要求")
+            
+            min_width = min(min_width, img.width)
+            min_height = min(min_height, img.height)
+            logger.info(f"图片 {idx + 1}: {img.width}x{img.height} (比例 {aspect_ratio:.4f})")
+        
+        slide_width_pixels = int(min_width)
+        slide_height_pixels = int(min_height)
+        logger.info(f"统一使用最小尺寸作为幻灯片尺寸: {slide_width_pixels}x{slide_height_pixels}")
+        
+        # 如果图片尺寸不一致，给出警告
+        if any(img.width != slide_width_pixels or img.height != slide_height_pixels for img in editable_images):
+            logger.warning(f"图片尺寸不一致，已统一到最小尺寸 {slide_width_pixels}x{slide_height_pixels}")
+    else:
+        # 如果没有图片，使用默认尺寸
+        slide_width_pixels = 1920
+        slide_height_pixels = 1080
+        logger.warning("没有图片，使用默认尺寸: 1920x1080")
+    
     ExportService.create_editable_pptx_with_recursive_analysis(
         editable_images=editable_images,
         output_file=output_file,
-        slide_width_pixels=1920,
-        slide_height_pixels=1080,
+        slide_width_pixels=slide_width_pixels,
+        slide_height_pixels=slide_height_pixels,
         text_attribute_extractor=text_attribute_extractor,
         progress_callback=progress_callback
     )
