@@ -1191,7 +1191,7 @@ export const SlidePreview: React.FC = () => {
                       <img
                         src={imageUrl}
                         alt={`Slide ${selectedIndex + 1}`}
-                        className="w-full h-full object-contain select-none"
+                        className="w-full h-full object-cover select-none"
                         draggable={false}
                       />
                     ) : (
