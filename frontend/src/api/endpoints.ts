@@ -602,6 +602,7 @@ export interface UserTemplate {
   template_id: string;
   name?: string;
   template_image_url: string;
+  thumb_url?: string;  // Thumbnail URL for faster loading
   created_at?: string;
   updated_at?: string;
 }

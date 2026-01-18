@@ -441,19 +441,64 @@ class FileService:
     def delete_user_template(self, template_id: str) -> bool:
         """
         Delete user template
-        
+
         Args:
             template_id: Template ID
-        
+
         Returns:
             True if deleted successfully
         """
         import shutil
         templates_dir = self._get_user_templates_dir()
         template_dir = templates_dir / template_id
-        
+
         if template_dir.exists():
             shutil.rmtree(template_dir)
-        
+
         return True
+
+    def save_user_template_thumbnail(self, template_id: str, original_path: str,
+                                      quality: int = 80, max_width: int = 600) -> Optional[str]:
+        """
+        Generate and save thumbnail for user template
+
+        Args:
+            template_id: Template ID
+            original_path: Relative path to original template image
+            quality: JPEG quality (1-100), default 80
+            max_width: Maximum thumbnail width in pixels (default 600)
+
+        Returns:
+            Relative file path to thumbnail, or None if failed
+        """
+        try:
+            # Get full path to original image
+            original_full_path = self.upload_folder / original_path.replace('\\', '/')
+
+            if not original_full_path.exists():
+                return None
+
+            # Open and process image
+            image = Image.open(str(original_full_path))
+
+            # Resize if needed
+            image = resize_image_for_thumbnail(image, max_width)
+
+            # Convert to RGB for JPEG
+            image = convert_image_to_rgb(image)
+
+            # Save thumbnail
+            templates_dir = self._get_user_templates_dir()
+            template_dir = templates_dir / template_id
+            template_dir.mkdir(exist_ok=True, parents=True)
+
+            thumb_filename = "template-thumb.webp"
+            thumb_filepath = template_dir / thumb_filename
+
+            image.save(str(thumb_filepath), 'WEBP', quality=quality)
+            image.close()
+
+            return thumb_filepath.relative_to(self.upload_folder).as_posix()
+        except Exception:
+            return None
     

@@ -17,15 +17,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    """
-    Add cached_image_path field to pages table.
-    This stores the path to compressed JPG thumbnail for faster frontend loading.
-    """
     op.add_column('pages', sa.Column('cached_image_path', sa.String(500), nullable=True))
 
 
 def downgrade() -> None:
-    """
-    Remove cached_image_path field from pages table.
-    """
     op.drop_column('pages', 'cached_image_path')
