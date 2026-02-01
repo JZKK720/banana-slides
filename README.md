@@ -571,7 +571,8 @@ banana-slides/
 
 欢迎提出新功能建议或反馈，本人也会~~佛系~~回答大家问题
 
-<img width="301" alt="image" src="https://github.com/user-attachments/assets/56fb33bb-fab7-4625-a860-ecef09f41817" />
+<img width="301" alt="image" src="https://github.com/user-attachments/assets/dde3f594-4ec1-4360-aa76-95b85857174b" />
+
 
   
 
