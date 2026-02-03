@@ -81,7 +81,7 @@ def is_simple_latex(latex: str) -> bool:
     判断是否是简单的 LaTeX（可以直接转换为文本）
     
     简单 LaTeX 包括：
-    - 纯转义字符（如 10\%）
+    - 纯转义字符（如 10\\%）
     - 简单符号（如 \alpha）
     - 简单上下标（如 x^2, x_1）
     """

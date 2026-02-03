@@ -277,8 +277,6 @@ def get_inpainting_service(provider_type: str = None) -> InpaintingService:
     Returns:
         InpaintingService 实例
     """
-    global _inpainting_service_instances
-    
     # 从配置读取默认 provider
     if provider_type is None:
         config = get_config()

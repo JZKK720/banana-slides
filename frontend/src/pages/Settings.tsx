@@ -39,7 +39,7 @@ interface ServiceTestState {
 
 // 初始表单数据
 const initialFormData = {
-  ai_provider_format: 'gemini' as 'openai' | 'gemini',
+  ai_provider_format: 'gemini' as 'openai' | 'gemini' | 'vertex',
   api_base_url: '',
   api_key: '',
   text_model: '',
@@ -72,16 +72,17 @@ const settingsSections: SectionConfig[] = [
         type: 'buttons',
         description: '选择 API 请求格式，影响后端如何构造和发送请求。保存设置后生效。',
         options: [
-          { value: 'openai', label: 'OpenAI 格式' },
+          { value: 'openai', label: 'OpenAI / Ollama 格式（含本地 OpenAI 兼容服务）' },
           { value: 'gemini', label: 'Gemini 格式' },
+          { value: 'vertex', label: 'Vertex 格式' },
         ],
       },
       {
         key: 'api_base_url',
         label: 'API Base URL',
         type: 'text',
-        placeholder: 'https://api.example.com',
-        description: '设置大模型提供商 API 的基础 URL',
+        placeholder: 'https://api.example.com 或 http://localhost:11434/v1',
+        description: '设置大模型提供商 API 的基础 URL（Ollama: http://localhost:11434/v1, LM Studio: http://localhost:1234/v1）',
       },
       {
         key: 'api_key',
@@ -503,7 +504,9 @@ export const Settings: React.FC = () => {
                   value === option.value
                     ? option.value === 'openai'
                       ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md'
-                      : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md'
+                      : option.value === 'vertex'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md'
+                        : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md'
                     : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                 }`}
               >
@@ -604,6 +607,25 @@ export const Settings: React.FC = () => {
         />
         {field.description && (
           <p className="mt-1 text-sm text-gray-500">{field.description}</p>
+        )}
+        {field.key === 'api_base_url' && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-gray-500">快速填充本地端点：</span>
+            <button
+              type="button"
+              onClick={() => handleFieldChange('api_base_url', 'http://localhost:11434/v1')}
+              className="text-xs px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+            >
+              Ollama (11434)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFieldChange('api_base_url', 'http://localhost:1234/v1')}
+              className="text-xs px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+            >
+              LM Studio (1234)
+            </button>
+          </div>
         )}
       </div>
     );
