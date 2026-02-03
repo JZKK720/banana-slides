@@ -10,10 +10,13 @@
 
 import { test, expect } from '@playwright/test'
 
+const baseUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
+const buildUrl = (route: string) => new URL(route, baseUrl).toString()
+
 test.describe('Visual Regression Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app
-    await page.goto('http://localhost:3000')
+    await page.goto(baseUrl)
   })
   
   test('Homepage visual regression', async ({ page }) => {
@@ -35,7 +38,7 @@ test.describe('Visual Regression Tests', () => {
     // Note: This may need to be adjusted based on your routing
     try {
       // Try to navigate to preview page (you may need to create a test project first)
-      await page.goto('http://localhost:3000/project/test-project-id/preview')
+      await page.goto(buildUrl('/project/test-project-id/preview'))
       await page.waitForLoadState('networkidle')
       
       // Take screenshot of SlidePreview component
@@ -61,7 +64,7 @@ test.describe('Visual Regression Tests', () => {
   test('Outline Editor visual regression', async ({ page }) => {
     // Navigate to outline editor
     try {
-      await page.goto('http://localhost:3000/project/test-project-id/outline')
+      await page.goto(buildUrl('/project/test-project-id/outline'))
       await page.waitForLoadState('networkidle')
       
       // Take screenshot of outline editor
@@ -77,7 +80,7 @@ test.describe('Visual Regression Tests', () => {
   test('Description Editor visual regression', async ({ page }) => {
     // Navigate to description editor
     try {
-      await page.goto('http://localhost:3000/project/test-project-id/detail')
+      await page.goto(buildUrl('/project/test-project-id/detail'))
       await page.waitForLoadState('networkidle')
       
       // Take screenshot of description editor
@@ -92,7 +95,7 @@ test.describe('Visual Regression Tests', () => {
   
   test('Loading states visual regression', async ({ page }) => {
     // Test loading spinner/state
-    await page.goto('http://localhost:3000')
+    await page.goto(baseUrl)
     
     // Trigger a loading state (e.g., click create button)
     // Ensure "一句话生成" tab is selected (it's selected by default)

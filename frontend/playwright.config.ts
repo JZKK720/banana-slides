@@ -5,6 +5,11 @@ import { defineConfig, devices } from '@playwright/test'
  * 
  * @see https://playwright.dev/docs/test-configuration
  */
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
+const webServerUrl = process.env.PLAYWRIGHT_WEB_SERVER_URL || baseURL
+const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'cd .. && docker compose up -d && sleep 10'
+const disableWebServer = process.env.PLAYWRIGHT_WEB_SERVER_DISABLED === 'true'
+
 export default defineConfig({
   // 测试目录
   testDir: './e2e',
@@ -34,7 +39,7 @@ export default defineConfig({
   // 全局设置
   use: {
     // 基础URL
-    baseURL: 'http://localhost:3000',
+    baseURL,
     
     // 截图设置
     screenshot: 'only-on-failure',
@@ -67,9 +72,9 @@ export default defineConfig({
   ],
   
   // 本地开发时启动服务
-  webServer: process.env.CI ? undefined : {
-    command: 'cd .. && docker compose up -d && sleep 10',
-    url: 'http://localhost:3000',
+  webServer: process.env.CI || disableWebServer ? undefined : {
+    command: webServerCommand,
+    url: webServerUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

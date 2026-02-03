@@ -27,6 +27,9 @@ import { test, expect } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
 
+const baseUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
+const buildUrl = (route: string) => new URL(route, baseUrl).toString()
+
 test.describe('UI-driven E2E test: From user interface to PPT export', () => {
   // Increase timeout to 20 minutes
   test.setTimeout(20 * 60 * 1000)
@@ -40,7 +43,7 @@ test.describe('UI-driven E2E test: From user interface to PPT export', () => {
     // Step 1: Visit homepage
     // ====================================
     console.log('📱 Step 1: Opening homepage...')
-    await page.goto('http://localhost:3000')
+    await page.goto(baseUrl)
     
     // Verify page loaded
     await expect(page).toHaveTitle(/蕉幻|Banana/i)
@@ -293,7 +296,7 @@ test.describe('UI-driven E2E test: From user interface to PPT export', () => {
       const match = urlBeforeClick.match(/\/project\/([^/]+)\//)
       if (match) {
         const projectId = match[1]
-        const targetUrl = `http://localhost:3000/project/${projectId}/preview`
+        const targetUrl = buildUrl(`/project/${projectId}/preview`)
         console.log(`  Navigating to: ${targetUrl}`)
         await page.goto(targetUrl, { waitUntil: 'domcontentloaded' })
       } else {
@@ -669,7 +672,7 @@ test.describe('UI E2E - Simplified (skip long waits)', () => {
     console.log('\n🏃 Quick E2E test (verify UI flow, do not wait for generation)\n')
     
     // Visit homepage
-    await page.goto('http://localhost:3000')
+    await page.goto(baseUrl)
     console.log('✓ Homepage loaded')
     
     // Ensure "一句话生成" tab is selected (it's selected by default)
